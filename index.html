@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEws App</title>
+    <link rel="stylesheet" href="css/styles.css">
+    
+</head>
+<body>
+    <nav>
+        <div class="main-nav container flex"> 
+            <a href="#" onclick="reload()" class="company-logo">
+                <img src="assets/logo.png" alt="company logo">
+            </a>
+            <div class="nav-links">
+                <ul class="flex">
+                    <li class="hover-link nav-item" id="ipl" onclick="onNavItemClick('ipl')">IPL</li>
+                    <li class="hover-link nav-item" id="finance" onclick="onNavItemClick('finance')">Finance</li>
+                    <li class="hover-link nav-item" id="politics" onclick="onNavItemClick('politics')">Politics</li>
+                </ul>
+            </div>
+            <div class="search-bar flex">
+                <input id="search-text" type="text" class="news-input" placeholder="e.g Science">
+                <button class="search-button" id="search-button">Search</button>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="cards-container container flex" id="cards-container">
+        </div>
+    </main>
+
+    <template id="template-news-card">
+        <div class="card">
+            <div class="card-header">
+                <img src="https://via.placeholder.com/400x200" alt="news-image" id="news-img">
+            </div>
+            <div class="card-content">
+                <h3 id="news-title">This is the Title</h3>
+                <h6 class="news-source" id="news-source">End Gadget 26/08/2023</h6>
+                <p class="news-desc" id="news-desc">I am trying to reference the typography from google fonts. The problem is that when I push the changes the font will be displayed on the console</p>
+            </div>
+        </div>
+    </template>
+    
+    <script>
+
+    const API_KEY = "044c4ed919e643e2802bd93030d5d3c1";
+    const url = "https://newsapi.org/v2/everything?q=";
+        window.addEventListener("load", () => fetchNews("India"));
+
+function reload() {
+    window.location.reload();
+}
+
+async function fetchNews(query) {
+    const res = await fetch(`${url}${query}&apiKey=${API_KEY}`);
+    const data =await res.json();
+    console.log(data);
+    bindData(data.articles);
+}
+
+function bindData(articles) {
+    const cardsContainer=document.getElementById('cards-container');
+    const newsCardTemplate = document.getElementById("template-news-card");
+    cardsContainer.innerHTML = "";
+
+    articles.forEach((article) => {
+        if(!article.urlToImage) return;
+        const cardClone = newsCardTemplate.content.cloneNode(true);
+        fillDataInCard(cardClone, article);
+        cardsContainer.appendChild(cardClone);
+    });
+}
+
+function fillDataInCard(cardClone, article) {
+    const newsImg = cardClone.querySelector('#news-img');
+    const newsTitle = cardClone.querySelector('#news-title');
+    const newsSource = cardClone.querySelector('#news-source');
+    const newsDesc = cardClone.querySelector('#news-desc');
+
+    newsImg.src = article.urlToImage;
+    newsTitle.innerHTML = article.title;
+    newsDesc.innerHTML = article.description;
+
+    const date = new Date(article.publishedAt).toLocaleString("en-US", {
+       timeZone: "Asia/Jakarta" 
+    });
+
+    newsSource.innerHTML = `${article.source.name}  ${date}`;
+    cardClone.firstElementChild.addEventListener("click", () => {
+        window.open(article.url,"_blank");
+    })
+}
+
+let curSelectedNav = null;
+function onNavItemClick(id) {
+    fetchNews(id);
+    const navItem = document.getElementById(id);
+    curSelectedNav?.classList.remove('active');
+    curSelectedNav = navItem;
+    curSelectedNav.classList.add('active');
+}
+
+const serachbutton = document.getElementById('search-button');
+const searchText = document.getElementById('search-text');
+
+serachbutton.addEventListener("click", () => {
+    const query = searchText.value;
+    if(!query) return;
+    fetchNews(query);
+    curSelectedNav?.classList.remove('active');
+    curSelectedNav = null;
+});
+    </script>
+</body>
+</html>
